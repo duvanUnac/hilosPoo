@@ -1,7 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class VerticalBarGraphPanel extends JPanel {
+class VerticalBarGraphPanel extends JPanel {
     private int percentage;
 
     public VerticalBarGraphPanel() {
@@ -11,7 +11,7 @@ public class VerticalBarGraphPanel extends JPanel {
     public void setPercentage(int percentage) {
         if (percentage >= 0 && percentage <= 100) {
             this.percentage = percentage;
-            repaint();
+            repaint(); // Volver a dibujar la gráfica
         }
     }
 
@@ -21,7 +21,7 @@ public class VerticalBarGraphPanel extends JPanel {
         int width = getWidth();
         int height = getHeight();
 
-        int barWidth = (int) (width * 0.8);
+        int barWidth = (int) (width * 0.9);
         int barHeight = (int) (height * (percentage / 100.0));
 
         g.setColor(Color.BLUE);

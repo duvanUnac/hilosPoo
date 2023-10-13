@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class ComparadorHilos extends JFrame {
@@ -11,6 +12,9 @@ public class ComparadorHilos extends JFrame {
     private JTextField txtFutbol;
     private JTextField txtBasketball;
     private JLabel timeLabel;
+
+    private ArrayList<Integer> futbolData;
+    private ArrayList<Integer> basketballData;
 
     public ComparadorHilos() {
         super("Comparador de Intereses");
@@ -67,16 +71,17 @@ public class ComparadorHilos extends JFrame {
         mainPanel.add(graphPanelBasketball, gbc);
 
         // Etiqueta para mostrar la hora
-        gbc.gridx = 10;
-        gbc.gridy = 0;
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.anchor = GridBagConstraints.NORTHEAST;
         timeLabel = new JLabel("Hora actual: ");
         mainPanel.add(timeLabel, gbc);
 
         getContentPane().add(mainPanel);
 
-        setLocationRelativeTo(null);
+        futbolData = new ArrayList<>();
+        basketballData = new ArrayList<>();
 
         // Iniciar un hilo para mostrar la hora
         Thread timeThread = new Thread(new Runnable() {
@@ -100,6 +105,28 @@ public class ComparadorHilos extends JFrame {
             }
         });
         timeThread.start();
+
+        // Iniciar un hilo para generar gráficas cada 3 segundos
+        Thread graphUpdateThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            graphPanelFutbol.setPercentage(getAverage(futbolData));
+                            graphPanelBasketball.setPercentage(getAverage(basketballData));
+                        }
+                    });
+                    try {
+                        Thread.sleep(3000); // Generar gráficas cada 3 segundos
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        graphUpdateThread.start();
     }
 
     private void compararPorcentajes() {
@@ -107,35 +134,25 @@ public class ComparadorHilos extends JFrame {
             int porcentajeFutbol = Integer.parseInt(txtFutbol.getText());
             int porcentajeBasketball = Integer.parseInt(txtBasketball.getText());
 
-            // Crear un hilo para actualizar las barras de progreso
-            Thread graphUpdateThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    for (int i = 0; i <= porcentajeFutbol; i++) {
-                        graphPanelFutbol.setPercentage(i);
-                        try {
-                            Thread.sleep(50); // Simula un proceso
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    for (int i = 0; i <= porcentajeBasketball; i++) {
-                        graphPanelBasketball.setPercentage(i);
-                        try {
-                            Thread.sleep(50); // Simula un proceso
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
-
-            graphUpdateThread.start();
+            futbolData.add(porcentajeFutbol);
+            basketballData.add(porcentajeBasketball);
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Ingrese valores válidos.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private int getAverage(ArrayList<Integer> data) {
+        if (data.isEmpty()) {
+            return 0;
+        }
+
+        int sum = 0;
+        for (int value : data) {
+            sum += value;
+        }
+        return sum / data.size();
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -146,3 +163,5 @@ public class ComparadorHilos extends JFrame {
         });
     }
 }
+
+
